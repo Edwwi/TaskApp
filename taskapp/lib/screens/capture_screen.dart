@@ -65,7 +65,7 @@ class CaptureScreen extends StatelessWidget {
                       height: 150,
                       decoration: BoxDecoration(
                         color: Colors.grey.shade200,
-                        shape: BoxType.circle,
+                        shape: BoxShape.circle,
                       ),
                     ),
                   ),

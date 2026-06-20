@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/task_provider.dart';
 import '../theme/app_theme.dart';
-import '../models/task_model.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -32,18 +31,30 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             
-            // Language Selection
-            _buildSectionHeader(provider.translate('language')),
+            // Preferences Section
+            _buildSectionHeader(provider.translate('preferences')),
             Card(
-              child: ListTile(
-                leading: const Icon(Icons.language),
-                title: Text(provider.language == 'es' ? 'Español' : 'English'),
-                trailing: Switch(
-                  value: provider.language == 'en',
-                  onChanged: (val) {
-                    provider.setLanguage(val ? 'en' : 'es');
-                  },
-                ),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.language),
+                    title: Text(provider.translate('language')),
+                    subtitle: Text(provider.language == 'es' ? 'Español' : 'English'),
+                    trailing: Switch(
+                      value: provider.language == 'en',
+                      onChanged: (val) => provider.setLanguage(val ? 'en' : 'es'),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: Icon(provider.isDarkMode ? Icons.dark_mode : Icons.light_mode),
+                    title: Text(provider.translate('dark_mode')),
+                    trailing: Switch(
+                      value: provider.isDarkMode,
+                      onChanged: (val) => provider.toggleDarkMode(val),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
@@ -51,29 +62,6 @@ class ProfileScreen extends StatelessWidget {
             // Statistics Section
             _buildSectionHeader(provider.translate('stats')),
             _buildStatsGrid(provider),
-            const SizedBox(height: 24),
-
-            // Preferences
-            _buildSectionHeader(provider.translate('preferences')),
-            Card(
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.notifications_outlined),
-                    title: const Text('Notifications'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {},
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.dark_mode_outlined),
-                    title: const Text('Dark Mode'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {},
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
@@ -126,7 +114,7 @@ class ProfileScreen extends StatelessWidget {
         children: [
           Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500), textAlign: Alignment.center),
+          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
         ],
       ),
     );

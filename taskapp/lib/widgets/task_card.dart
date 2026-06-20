@@ -15,21 +15,26 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color priorityColor = _getPriorityColor(task.priority);
+
     if (isHorizontal) {
       return Container(
         width: 200,
         margin: const EdgeInsets.only(right: 16, bottom: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF4A90E2), Color(0xFF50E3C2)],
+            colors: [
+              const Color(0xFF4A90E2),
+              priorityColor.withOpacity(0.8),
+            ],
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.withOpacity(0.3),
+              color: priorityColor.withOpacity(0.3),
               blurRadius: 10,
               offset: const Offset(0, 5),
             )
@@ -39,23 +44,29 @@ class TaskCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Icon(Icons.settings, color: Colors.white70, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  'Project ${task.id}',
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                Row(
+                  children: [
+                    const Icon(Icons.settings, color: Colors.white70, size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      task.category.name.toUpperCase(),
+                      style: const TextStyle(color: Colors.white70, fontSize: 10),
+                    ),
+                  ],
+                ),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                 ),
               ],
             ),
             const Spacer(),
             Text(
               task.title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -73,8 +84,9 @@ class TaskCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
+        border: Border(left: BorderSide(color: priorityColor, width: 4)),
         boxShadow: const [
           BoxShadow(
             color: AppTheme.cardShadow,
@@ -88,12 +100,12 @@ class TaskCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppTheme.primaryBlue.withOpacity(0.1),
+              color: priorityColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               _getCategoryIcon(task.category),
-              color: AppTheme.primaryBlue,
+              color: priorityColor,
               size: 24,
             ),
           ),
@@ -104,14 +116,19 @@ class TaskCard extends StatelessWidget {
               children: [
                 Text(
                   task.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                Text(
-                  'hace 2 días', // Static as per mockup
-                  style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                Row(
+                  children: [
+                    Text(
+                      task.startTime.format(context),
+                      style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                    ),
+                    if (task.reminderMinutes > 0) ...[
+                      const SizedBox(width: 8),
+                      Icon(Icons.notifications_active, size: 12, color: AppTheme.primaryBlue.withOpacity(0.5)),
+                    ]
+                  ],
                 ),
               ],
             ),
@@ -123,6 +140,14 @@ class TaskCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Color _getPriorityColor(TaskPriority p) {
+    switch (p) {
+      case TaskPriority.high: return Colors.red;
+      case TaskPriority.medium: return Colors.orange;
+      case TaskPriority.low: return Colors.green;
+    }
   }
 
   IconData _getCategoryIcon(TaskCategory category) {

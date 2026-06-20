@@ -9,6 +9,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<TaskProvider>();
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -27,74 +29,77 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Hola Usuario!',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            Text(
+              '${provider.translate('welcome')} ${provider.userName}!',
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
-            Consumer<TaskProvider>(
-              builder: (context, provider, child) {
-                return Text(
-                  'Tienes ${provider.tasks.length} tareas hoy',
-                  style: const TextStyle(color: Colors.grey),
-                );
-              },
+            Text(
+              provider.translate('tasks_today').replaceFirst('{count}', provider.tasks.length.toString()),
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 24),
-            Row(
-              children: [
-                CategoryChip(label: 'Mis tareas', isSelected: true, onTap: () {}),
-                CategoryChip(label: 'En progreso', isSelected: false, onTap: () {}),
-                CategoryChip(label: 'Completadas', isSelected: false, onTap: () {}),
-              ],
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 200,
-              child: Consumer<TaskProvider>(
-                builder: (context, provider, child) {
-                  return ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: provider.tasks.length,
-                    itemBuilder: (context, index) {
-                      return TaskCard(task: provider.tasks[index], isHorizontal: true);
-                    },
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 12),
-            Center(
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(3, (index) => Container(
-                  width: index == 0 ? 16 : 8,
-                  height: 4,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  decoration: BoxDecoration(
-                    color: index == 0 ? Colors.purple : Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                )),
+                children: [
+                  CategoryChip(label: provider.translate('my_tasks'), isSelected: true, onTap: () {}),
+                  CategoryChip(label: provider.translate('in_progress'), isSelected: false, onTap: () {}),
+                  CategoryChip(label: provider.translate('completed'), isSelected: false, onTap: () {}),
+                ],
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Progress',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Consumer<TaskProvider>(
-              builder: (context, provider, child) {
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+            
+            if (provider.tasks.isEmpty)
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.assignment_outlined, size: 48, color: Colors.grey.shade300),
+                      const SizedBox(height: 12),
+                      Text(provider.translate('no_tasks'), style: TextStyle(color: Colors.grey.shade400)),
+                    ],
+                  ),
+                ),
+              )
+            else
+              SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
                   itemCount: provider.tasks.length,
                   itemBuilder: (context, index) {
-                    return TaskCard(task: provider.tasks[index]);
+                    return TaskCard(task: provider.tasks[index], isHorizontal: true);
                   },
-                );
-              },
+                ),
+              ),
+            
+            const SizedBox(height: 24),
+            Text(
+              provider.translate('progress'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 16),
+            
+            if (provider.tasks.isEmpty)
+              const SizedBox()
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: provider.tasks.length,
+                itemBuilder: (context, index) {
+                  return TaskCard(task: provider.tasks[index]);
+                },
+              ),
           ],
         ),
       ),

@@ -18,20 +18,23 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   String _title = '';
   String _description = '';
   TaskCategory _category = TaskCategory.design;
-  DateTime _selectedDate = DateTime(2026, 6, 2);
-  TimeOfDay _startTime = const TimeOfDay(hour: 13, minute: 22);
-  TimeOfDay _endTime = const TimeOfDay(hour: 15, minute: 20);
+  TaskPriority _priority = TaskPriority.medium;
+  DateTime _selectedDate = DateTime.now();
+  TimeOfDay _startTime = TimeOfDay.now();
+  TimeOfDay _endTime = TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 1)));
+  int _reminderMinutes = 15;
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<TaskProvider>();
+
     return Scaffold(
       backgroundColor: AppTheme.primaryBlue,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Crear una Tarea', style: TextStyle(color: Colors.white)),
-        actions: [IconButton(icon: const Icon(Icons.search), onPressed: () {})],
+        title: Text(provider.translate('create_task'), style: const TextStyle(color: Colors.white)),
       ),
       body: Column(
         children: [
@@ -42,9 +45,8 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Nombre', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  Text(provider.translate('name'), style: const TextStyle(color: Colors.white70, fontSize: 14)),
                   TextFormField(
-                    initialValue: 'Ingresa un nombre',
                     style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
                     decoration: const InputDecoration(
                       enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white30)),
@@ -53,11 +55,22 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     onSaved: (value) => _title = value ?? '',
                   ),
                   const SizedBox(height: 24),
-                  const Text('Fecha', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  Text(provider.translate('date'), style: const TextStyle(color: Colors.white70, fontSize: 14)),
                   const SizedBox(height: 8),
-                  Text(
-                    DateFormat('MMM d, yyyy').format(_selectedDate),
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _selectedDate,
+                        firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                        lastDate: DateTime(2030),
+                      );
+                      if (picked != null) setState(() => _selectedDate = picked);
+                    },
+                    child: Text(
+                      DateFormat('MMM d, yyyy').format(_selectedDate),
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
                   ),
                   const Divider(color: Colors.white30, height: 24),
                 ],
@@ -68,9 +81,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardTheme.color,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -82,9 +95,15 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Start Time', style: TextStyle(color: Colors.grey)),
+                              Text(provider.translate('start_time'), style: const TextStyle(color: Colors.grey)),
                               const SizedBox(height: 8),
-                              Text(_startTime.format(context), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              InkWell(
+                                onTap: () async {
+                                  final picked = await showTimePicker(context: context, initialTime: _startTime);
+                                  if (picked != null) setState(() => _startTime = picked);
+                                },
+                                child: Text(_startTime.format(context), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              ),
                             ],
                           ),
                         ),
@@ -92,25 +111,68 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('End Time', style: TextStyle(color: Colors.grey)),
+                              Text(provider.translate('end_time'), style: const TextStyle(color: Colors.grey)),
                               const SizedBox(height: 8),
-                              Text(_endTime.format(context), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              InkWell(
+                                onTap: () async {
+                                  final picked = await showTimePicker(context: context, initialTime: _endTime);
+                                  if (picked != null) setState(() => _endTime = picked);
+                                },
+                                child: Text(_endTime.format(context), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              ),
                             ],
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 24),
-                    const Text('Description', style: TextStyle(color: Colors.grey)),
+                    
+                    Text(provider.translate('priority'), style: const TextStyle(color: Colors.grey)),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: TaskPriority.values.map((p) {
+                        bool isSelected = _priority == p;
+                        Color pColor = p == TaskPriority.high ? Colors.red : p == TaskPriority.medium ? Colors.orange : Colors.green;
+                        return ChoiceChip(
+                          label: Text(provider.translate(p.name)),
+                          selected: isSelected,
+                          onSelected: (val) => setState(() => _priority = p),
+                          selectedColor: pColor.withOpacity(0.2),
+                          labelStyle: TextStyle(color: isSelected ? pColor : Colors.grey),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+
+                    Text(provider.translate('reminder'), style: const TextStyle(color: Colors.grey)),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<int>(
+                      value: _reminderMinutes,
+                      decoration: const InputDecoration(border: OutlineInputBorder()),
+                      items: [
+                        DropdownMenuItem(value: 0, child: Text(provider.translate('none'))),
+                        DropdownMenuItem(value: 5, child: Text(provider.translate('min_5'))),
+                        DropdownMenuItem(value: 15, child: Text(provider.translate('min_15'))),
+                        DropdownMenuItem(value: 30, child: Text(provider.translate('min_30'))),
+                        DropdownMenuItem(value: 60, child: Text(provider.translate('hour_1'))),
+                      ],
+                      onChanged: (val) => setState(() => _reminderMinutes = val ?? 0),
+                    ),
+                    const SizedBox(height: 24),
+
+                    Text(provider.translate('description'), style: const TextStyle(color: Colors.grey)),
                     const SizedBox(height: 8),
                     TextFormField(
-                      initialValue: 'Lorem ipsum dolor sit amet, adipiscing elit, sed dianummy nibh euismod dolor sit amet, or adipiscing elit, sed dianummy nibh euismod.',
-                      maxLines: 4,
-                      decoration: const InputDecoration(border: InputBorder.none),
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                        hintText: provider.translate('description'),
+                        border: InputBorder.none,
+                      ),
                       onSaved: (value) => _description = value ?? '',
                     ),
                     const SizedBox(height: 24),
-                    const Text('Categoría', style: TextStyle(color: Colors.grey)),
+                    Text(provider.translate('category'), style: const TextStyle(color: Colors.grey)),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 8,
@@ -130,15 +192,18 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       child: ElevatedButton(
                         onPressed: () {
                           _formKey.currentState?.save();
+                          if (_title.isEmpty) return;
+                          
                           final newTask = Task(
-                            id: DateTime.now().toString(),
+                            id: DateTime.now().millisecondsSinceEpoch.toString(),
                             title: _title,
                             description: _description,
                             category: _category,
-                            priority: TaskPriority.medium,
+                            priority: _priority,
                             dueDate: _selectedDate,
                             startTime: _startTime,
                             endTime: _endTime,
+                            reminderMinutes: _reminderMinutes,
                           );
                           context.read<TaskProvider>().addTask(newTask);
                           Navigator.pop(context);
@@ -148,7 +213,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
-                        child: const Text('Create Task', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: Text(provider.translate('save'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],

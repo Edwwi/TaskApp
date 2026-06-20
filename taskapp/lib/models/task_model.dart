@@ -1,1 +1,72 @@
-import \u0027package:flutter/material.dart\u0027;\n\nenum TaskCategory {\n  design,\n  meeting,\n  coding,\n  biz,\n  testing,\n  quickest,\n  work,\n  personal,\n  study,\n  urgent\n}\n\nenum TaskPriority {\n  high,\n  medium,\n  low\n}\n\nclass Task {\n  final String id;\n  final String title;\n  final String description;\n  final TaskCategory category;\n  final TaskPriority priority;\n  final DateTime dueDate;\n  final TimeOfDay startTime;\n  final TimeOfDay endTime;\n  bool isCompleted;\n\n  Task({\n    required this.id,\n    required this.title,\n    required this.description,\n    required this.category,\n    required this.priority,\n    required this.dueDate,\n    required this.startTime,\n    required this.endTime,\n    this.isCompleted \u003d false,\n  });\n\n  Task copyWith({\n    String? id,\n    String? title,\n    String? description,\n    TaskCategory? category,\n    TaskPriority? priority,\n    DateTime? dueDate,\n    TimeOfDay? startTime,\n    TimeOfDay? endTime,\n    bool? isCompleted,\n  }) {\n    return Task(\n      id: id ?? this.id,\n      title: title ?? this.title,\n      description: description ?? this.description,\n      category: category ?? this.category,\n      priority: priority ?? this.priority,\n      dueDate: dueDate ?? this.dueDate,\n      startTime: startTime ?? this.startTime,\n      endTime: endTime ?? this.endTime,\n      isCompleted: isCompleted ?? this.isCompleted,\n    );\n  }\n}\n
+import 'package:flutter/material.dart';
+
+enum TaskCategory {
+  design,
+  meeting,
+  coding,
+  biz,
+  testing,
+  quickest,
+  work,
+  personal,
+  study,
+  urgent
+}
+
+enum TaskPriority {
+  high,
+  medium,
+  low
+}
+
+class Task {
+  final String id;
+  final String title;
+  final String description;
+  final TaskCategory category;
+  final TaskPriority priority;
+  final DateTime dueDate;
+  final TimeOfDay startTime;
+  final TimeOfDay endTime;
+  final int reminderMinutes;
+  bool isCompleted;
+
+  Task({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.category,
+    required this.priority,
+    required this.dueDate,
+    required this.startTime,
+    required this.endTime,
+    this.reminderMinutes = 0,
+    this.isCompleted = false,
+  });
+
+  Task copyWith({
+    String? id,
+    String? title,
+    String? description,
+    TaskCategory? category,
+    TaskPriority? priority,
+    DateTime? dueDate,
+    TimeOfDay? startTime,
+    TimeOfDay? endTime,
+    int? reminderMinutes,
+    bool? isCompleted,
+  }) {
+    return Task(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      priority: priority ?? this.priority,
+      dueDate: dueDate ?? this.dueDate,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      reminderMinutes: reminderMinutes ?? this.reminderMinutes,
+      isCompleted: isCompleted ?? this.isCompleted,
+    );
+  }
+}
