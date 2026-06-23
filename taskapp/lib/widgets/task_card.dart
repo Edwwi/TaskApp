@@ -4,6 +4,7 @@ import '../models/task_model.dart';
 import '../providers/task_provider.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
+import 'task_detail_sheet.dart';
 
 class TaskCard extends StatelessWidget {
   final Task task;
@@ -20,8 +21,10 @@ class TaskCard extends StatelessWidget {
     Color priorityColor = _getPriorityColor(task.priority);
 
     if (isHorizontal) {
-      return Container(
-        width: 200,
+      return GestureDetector(
+        onTap: () => _showTaskDetails(context),
+        child: Container(
+          width: 200,
         margin: const EdgeInsets.only(right: 16, bottom: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -79,84 +82,97 @@ class TaskCard extends StatelessWidget {
             ),
           ],
         ),
-      );
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(16),
-        border: Border(left: BorderSide(color: priorityColor, width: 4)),
-        boxShadow: const [
-          BoxShadow(
-            color: AppTheme.cardShadow,
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          )
-        ],
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: priorityColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+    );
+  }
+
+    return GestureDetector(
+      onTap: () => _showTaskDetails(context),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardTheme.color,
+          borderRadius: BorderRadius.circular(16),
+          border: Border(left: BorderSide(color: priorityColor, width: 4)),
+          boxShadow: const [
+            BoxShadow(
+              color: AppTheme.cardShadow,
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            )
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: priorityColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                _getCategoryIcon(task.category),
+                color: priorityColor,
+                size: 24,
+              ),
             ),
-            child: Icon(
-              _getCategoryIcon(task.category),
-              color: priorityColor,
-              size: 24,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.title,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        task.startTime.format(context),
+                        style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                      ),
+                      if (task.reminderMinutes > 0) ...[
+                        const SizedBox(width: 8),
+                        Icon(Icons.notifications_active, size: 12, color: AppTheme.primaryBlue.withValues(alpha: 0.5)),
+                      ]
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  task.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert),
+              onSelected: (value) {
+                if (value == 'delete') {
+                  context.read<TaskProvider>().deleteTask(task.id);
+                } else if (value == 'toggle') {
+                  context.read<TaskProvider>().toggleTaskStatus(task.id);
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'toggle',
+                  child: Text(task.isCompleted ? 'Marcar pendiente' : 'Marcar completada'),
                 ),
-                Row(
-                  children: [
-                    Text(
-                      task.startTime.format(context),
-                      style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
-                    ),
-                    if (task.reminderMinutes > 0) ...[
-                      const SizedBox(width: 8),
-                      Icon(Icons.notifications_active, size: 12, color: AppTheme.primaryBlue.withValues(alpha: 0.5)),
-                    ]
-                  ],
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Eliminar', style: TextStyle(color: Colors.red)),
                 ),
               ],
-            ),
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            onSelected: (value) {
-              if (value == 'delete') {
-                context.read<TaskProvider>().deleteTask(task.id);
-              } else if (value == 'toggle') {
-                context.read<TaskProvider>().toggleTaskStatus(task.id);
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'toggle',
-                child: Text(task.isCompleted ? 'Marcar pendiente' : 'Marcar completada'),
-              ),
-              const PopupMenuItem(
-                value: 'delete',
-                child: Text('Eliminar', style: TextStyle(color: Colors.red)),
-              ),
-            ],
-          )
-        ],
+            )
+          ],
+        ),
       ),
+    );
+  }
+
+  void _showTaskDetails(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => TaskDetailSheet(task: task),
     );
   }
 

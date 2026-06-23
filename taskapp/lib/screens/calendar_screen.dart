@@ -6,20 +6,29 @@ import 'create_task_screen.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
-class CalendarScreen extends StatelessWidget {
+class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
 
   @override
+  State<CalendarScreen> createState() => _CalendarScreenState();
+}
+
+class _CalendarScreenState extends State<CalendarScreen> {
+  DateTime _selectedDate = DateTime.now();
+
+  @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
     final provider = context.watch<TaskProvider>();
     
-    // Find the start of the week (Monday)
-    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    // Find the start of the week (Monday) based on selected date
+    final startOfWeek = _selectedDate.subtract(Duration(days: _selectedDate.weekday - 1));
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () {}),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back), 
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [IconButton(icon: const Icon(Icons.search), onPressed: () {})],
       ),
       body: Column(
@@ -30,9 +39,18 @@ class CalendarScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  DateFormat('MMMM d, yyyy', provider.language == 'es' ? 'es_ES' : 'en_US').format(now),
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      DateFormat('MMMM yyyy', provider.language == 'es' ? 'es_ES' : 'en_US').format(_selectedDate),
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                    Text(
+                      DateFormat('EEEE d', provider.language == 'es' ? 'es_ES' : 'en_US').format(_selectedDate),
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
@@ -61,28 +79,37 @@ class CalendarScreen extends StatelessWidget {
                 final dayDate = startOfWeek.add(Duration(days: idx));
                 final dayName = DateFormat('E', provider.language == 'es' ? 'es_ES' : 'en_US').format(dayDate);
                 final dayNum = dayDate.day;
-                bool isSelected = dayDate.day == now.day && dayDate.month == now.month;
+                bool isSelected = dayDate.day == _selectedDate.day && 
+                                  dayDate.month == _selectedDate.month &&
+                                  dayDate.year == _selectedDate.year;
 
-                return Column(
-                  children: [
-                    Text(dayName, style: TextStyle(color: isSelected ? AppTheme.primaryBlue : Colors.grey)),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isSelected ? AppTheme.primaryBlue.withValues(alpha: 0.1) : Colors.transparent,
-                        borderRadius: BorderRadius.circular(10),
-                        border: isSelected ? Border.all(color: AppTheme.primaryBlue) : null,
-                      ),
-                      child: Text(
-                        '$dayNum',
-                        style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected ? AppTheme.primaryBlue : (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black),
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedDate = dayDate;
+                    });
+                  },
+                  child: Column(
+                    children: [
+                      Text(dayName, style: TextStyle(color: isSelected ? AppTheme.primaryBlue : Colors.grey)),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppTheme.primaryBlue.withValues(alpha: 0.1) : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          border: isSelected ? Border.all(color: AppTheme.primaryBlue) : null,
+                        ),
+                        child: Text(
+                          '$dayNum',
+                          style: TextStyle(
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected ? AppTheme.primaryBlue : (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               }),
             ),
@@ -108,13 +135,25 @@ class CalendarScreen extends StatelessWidget {
                     child: Consumer<TaskProvider>(
                       builder: (context, provider, child) {
                         final dailyTasks = provider.tasks.where((t) => 
-                          t.dueDate.day == now.day && 
-                          t.dueDate.month == now.month && 
-                          t.dueDate.year == now.year
+                          t.dueDate.day == _selectedDate.day && 
+                          t.dueDate.month == _selectedDate.month && 
+                          t.dueDate.year == _selectedDate.year
                         ).toList();
 
                         if (dailyTasks.isEmpty) {
-                          return Center(child: Text(provider.translate('no_tasks')));
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.calendar_today_outlined, size: 64, color: Colors.grey.withValues(alpha: 0.3)),
+                                const SizedBox(height: 16),
+                                Text(
+                                  provider.translate('no_tasks'),
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          );
                         }
 
                         return ListView.builder(

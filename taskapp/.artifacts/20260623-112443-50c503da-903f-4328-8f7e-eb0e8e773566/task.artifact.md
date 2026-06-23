@@ -1,8 +1,10 @@
-# Task: Add File Upload to CaptureScreen
+# Task: Firebase Persistence and Auth
 
-- [x] Research and add `image_picker` dependency
-- [ ] Implement file picking and processing logic in `capture_screen.dart`
-    - [ ] Refactor processing logic to `_processImage`
-    - [ ] Implement `_pickFile` and choice dialog
-    - [ ] Add "Cargar" button to UI
+- [ ] Add Firebase dependencies
+- [ ] Implement Firebase Auth
+    - [ ] Create `AuthProvider`
+    - [ ] Create `LoginScreen`
+- [ ] Refactor Task model for Firestore
+- [ ] Refactor `TaskProvider` for Firestore sync
+- [ ] Update `main.dart` for Firebase initialization and Auth flow
 - [ ] Verify functionality

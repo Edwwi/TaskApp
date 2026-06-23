@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/task_provider.dart';
 import '../models/task_model.dart';
@@ -19,6 +20,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
   bool _isBusy = false;
   final TextRecognizer _textRecognizer = TextRecognizer();
   final BarcodeScanner _barcodeScanner = BarcodeScanner();
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -29,7 +31,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
   Future<void> _initializeCamera() async {
     final cameras = await availableCameras();
     if (cameras.isEmpty) return;
-    
+
     _controller = CameraController(cameras[0], ResolutionPreset.high);
     await _controller?.initialize();
     if (mounted) setState(() {});
@@ -43,45 +45,98 @@ class _CaptureScreenState extends State<CaptureScreen> {
     super.dispose();
   }
 
-  Future<void> _scanText() async {
-    if (_controller == null || !_controller!.value.isInitialized || _isBusy) return;
-
+  Future<void> _processImage(String path, String mode) async {
     setState(() => _isBusy = true);
     try {
-      final image = await _controller!.takePicture();
-      final inputImage = InputImage.fromFilePath(image.path);
-      final recognizedText = await _textRecognizer.processImage(inputImage);
-
-      if (recognizedText.text.isNotEmpty) {
-        _showTaskDialog(recognizedText.text, "OCR");
+      final inputImage = InputImage.fromFilePath(path);
+      if (mode == "OCR") {
+        final recognizedText = await _textRecognizer.processImage(inputImage);
+        if (!mounted) return;
+        if (recognizedText.text.isNotEmpty) {
+          _showTaskDialog(recognizedText.text, "OCR");
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No se detectó texto en la imagen')),
+          );
+        }
+      } else {
+        final barcodes = await _barcodeScanner.processImage(inputImage);
+        if (!mounted) return;
+        if (barcodes.isNotEmpty) {
+          final code = barcodes.first.displayValue;
+          if (code != null) {
+            _showTaskDialog(code, "QR/Barras");
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No se detectó ningún código QR/Barras')),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error OCR: $e')));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al procesar ($mode): $e')),
+      );
     } finally {
       setState(() => _isBusy = false);
     }
   }
 
-  Future<void> _scanQR() async {
+  Future<void> _scanFromCamera(String mode) async {
     if (_controller == null || !_controller!.value.isInitialized || _isBusy) return;
 
-    setState(() => _isBusy = true);
     try {
       final image = await _controller!.takePicture();
-      final inputImage = InputImage.fromFilePath(image.path);
-      final barcodes = await _barcodeScanner.processImage(inputImage);
-
-      if (barcodes.isNotEmpty) {
-        final code = barcodes.first.displayValue;
-        if (code != null) {
-          _showTaskDialog(code, "QR/Barras");
-        }
-      }
+      await _processImage(image.path, mode);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error QR: $e')));
-    } finally {
-      setState(() => _isBusy = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al capturar imagen: $e')),
+      );
     }
+  }
+
+  Future<void> _pickFile() async {
+    if (_isBusy) return;
+
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const ListTile(
+              title: Text(
+                '¿Qué deseas hacer con esta imagen?',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.text_fields),
+              title: const Text('Extraer Texto (OCR)'),
+              onTap: () {
+                Navigator.pop(context);
+                _processImage(image.path, "OCR");
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.qr_code_scanner),
+              title: const Text('Escanear QR / Barras'),
+              onTap: () {
+                Navigator.pop(context);
+                _processImage(image.path, "QR");
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showTaskDialog(String content, String source) {
@@ -106,7 +161,9 @@ class _CaptureScreenState extends State<CaptureScreen> {
               );
               context.read<TaskProvider>().addTask(newTask);
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tarea agregada exitosamente')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Tarea agregada exitosamente')),
+              );
             },
             child: const Text('Agregar Tarea'),
           ),
@@ -126,7 +183,11 @@ class _CaptureScreenState extends State<CaptureScreen> {
       body: Stack(
         children: [
           CameraPreview(_controller!),
-          if (_isBusy) const Center(child: CircularProgressIndicator()),
+          if (_isBusy)
+            Container(
+              color: Colors.black54,
+              child: const Center(child: CircularProgressIndicator()),
+            ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
@@ -137,12 +198,17 @@ class _CaptureScreenState extends State<CaptureScreen> {
                   _CaptureButton(
                     icon: Icons.text_fields,
                     label: 'OCR',
-                    onTap: _scanText,
+                    onTap: () => _scanFromCamera("OCR"),
+                  ),
+                  _CaptureButton(
+                    icon: Icons.file_upload,
+                    label: 'Cargar',
+                    onTap: _pickFile,
                   ),
                   _CaptureButton(
                     icon: Icons.qr_code_scanner,
                     label: 'QR',
-                    onTap: _scanQR,
+                    onTap: () => _scanFromCamera("QR"),
                   ),
                 ],
               ),
@@ -172,7 +238,14 @@ class _CaptureButton extends StatelessWidget {
           child: Icon(icon, color: Colors.white),
         ),
         const SizedBox(height: 8),
-        Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            shadows: [Shadow(blurRadius: 10, color: Colors.black)],
+          ),
+        ),
       ],
     );
   }

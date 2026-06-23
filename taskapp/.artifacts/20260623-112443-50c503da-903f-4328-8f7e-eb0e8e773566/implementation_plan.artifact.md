@@ -1,62 +1,51 @@
-# Add File Upload and Processing Options to CaptureScreen
+# Implementación de Persistencia con Firebase Firestore y Auth
 
-The goal is to allow users to upload images from their gallery in the `CaptureScreen` and then choose whether to process them using OCR or QR/Barcode scanning.
+El objetivo es reemplazar el almacenamiento en memoria por una persistencia real en la nube usando Firebase, permitiendo además la autenticación de usuarios.
 
-## Proposed Changes
+## Requisitos Previos (Acción del Usuario)
+Debido a que no puedo interactuar con la consola de forma externa para el login de Firebase, necesito que ejecutes lo siguiente en tu terminal si aún no lo has hecho:
+1. `npm install -g firebase-tools` (si no tienes Firebase CLI)
+2. `firebase login`
+3. `dart pub global activate flutterfire_cli`
+4. `flutterfire configure` (selecciona tu proyecto o crea uno nuevo)
 
-### Dependencies
+## Cambios Propuestos
 
+### Dependencias
 #### [pubspec.yaml](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/pubspec.yaml)
-
-- Added `image_picker` dependency (already done via shell command).
+- Añadir `firebase_core`, `cloud_firestore` y `firebase_auth`.
 
 ---
 
-### Screens
+### Modelos
+#### [task_model.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/models/task_model.dart)
+- Añadir métodos `toMap()` y `fromMap()` para serialización con Firestore.
+- Convertir `TimeOfDay` a `String` o `Map` para almacenamiento.
 
-#### [capture_screen.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/screens/capture_screen.dart)
+---
 
-- Import `package:image_picker/image_picker.dart`.
-- Refactor `_scanText` and `_scanQR` to use a shared `_processImage(String path, String mode)` method.
-- Add `_pickFile` method to handle image selection from gallery.
-- Add `_showProcessingOptionDialog` to let the user choose between OCR and QR after picking a file.
-- Update UI to include an "Upload" button in the capture controls.
+### Proveedores y Autenticación
+#### [NEW] [auth_provider.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/providers/auth_provider.dart)
+- Manejar el estado de autenticación (Login, Registro, Logout).
 
-```dart
-// Simplified view of the new processing logic
-Future<void> _processImage(String path, String mode) async {
-  setState(() => _isBusy = true);
-  try {
-    final inputImage = InputImage.fromFilePath(path);
-    if (mode == "OCR") {
-      final recognizedText = await _textRecognizer.processImage(inputImage);
-      if (recognizedText.text.isNotEmpty) {
-        _showTaskDialog(recognizedText.text, "OCR");
-      }
-    } else {
-      final barcodes = await _barcodeScanner.processImage(inputImage);
-      if (barcodes.isNotEmpty) {
-        final code = barcodes.first.displayValue;
-        if (code != null) {
-          _showTaskDialog(code, "QR/Barras");
-        }
-      }
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error $mode: $e')));
-  } finally {
-    setState(() => _isBusy = false);
-  }
-}
-```
+#### [task_provider.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/providers/task_provider.dart)
+- Refactorizar para usar `Stream<List<Task>>` desde Firestore en lugar de una lista local.
+- Vincular las tareas al `uid` del usuario autenticado.
 
-## Verification Plan
+---
 
-### Manual Verification
-- Run the app and navigate to the `CaptureScreen`.
-- Verify the new "Cargar" (Upload) button is visible.
-- Click "Cargar", select an image from the gallery.
-- Verify that a bottom sheet appears asking for "OCR" or "QR".
-- Select "OCR" and verify it extracts text from the selected image.
-- Select "QR" and verify it reads a code from the selected image.
-- Verify that the camera-based OCR and QR still work as expected.
+### Interfaz de Usuario
+#### [NEW] [login_screen.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/screens/login_screen.dart)
+- Pantalla para que el usuario inicie sesión o se registre.
+
+#### [main.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/main.dart)
+- Inicializar Firebase.
+- Envolver la app en un `StreamBuilder` para alternar entre Login y Home.
+
+## Plan de Verificación
+
+### Verificación Manual
+- Registrar un nuevo usuario.
+- Crear una tarea y verificar que aparezca en la consola de Firebase.
+- Cerrar sesión e iniciar con otro usuario; verificar que no vea las tareas del primero.
+- Activar el modo avión y verificar que la app siga funcionando (offline-first de Firestore).

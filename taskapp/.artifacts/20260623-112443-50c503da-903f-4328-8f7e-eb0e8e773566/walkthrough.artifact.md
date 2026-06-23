@@ -1,22 +1,30 @@
-# Walkthrough - Adición de Carga de Archivos en CaptureScreen
+# Walkthrough - Mejoras en Calendario y Detalles de Tarea
 
-He implementado la funcionalidad de carga de archivos en la pantalla de captura, permitiendo a los usuarios procesar imágenes tanto de la cámara como de la galería.
+He implementado la interactividad en el calendario y una vista detallada para las tareas.
 
 ## Cambios Realizados
 
-### [capture_screen.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/screens/capture_screen.dart)
+### [calendar_screen.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/screens/calendar_screen.dart)
 
-- **Integración de `image_picker`**: Se añadió la capacidad de seleccionar imágenes de la galería del dispositivo.
-- **Refactorización de Lógica**: Se centralizó el procesamiento de imágenes en un método compartido `_processImage`, que maneja tanto OCR como escaneo de QR/Barras.
-- **Nuevo Diálogo de Opciones**: Al seleccionar una imagen de la galería, se muestra un menú inferior (Bottom Sheet) para que el usuario elija qué tipo de procesamiento desea aplicar.
-- **Interfaz de Usuario**: Se añadió un botón "Cargar" entre los botones existentes de OCR y QR. Se mejoró la visibilidad del texto de los botones con sombras.
-- **Seguridad**: Se añadieron comprobaciones de `mounted` para evitar errores al usar el `BuildContext` después de llamadas asíncronas.
+- **Navegación entre Días**: Convertí la pantalla en un `StatefulWidget` para mantener el estado del día seleccionado. Ahora puedes tocar cualquier día de la semana para filtrar las tareas de ese día específico.
+- **Visualización Dinámica**: El encabezado de la pantalla (mes y día) se actualiza automáticamente según el día seleccionado.
+- **Resalte Visual**: El día seleccionado en la fila semanal ahora tiene un borde y un color de fondo sutil para identificarlo fácilmente.
+- **Estado Vacío**: Se añadió una ilustración y mensaje amigable cuando no hay tareas para el día seleccionado.
+
+### [task_detail_sheet.dart (NUEVO)](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/widgets/task_detail_sheet.dart)
+
+- **Panel de Detalles**: Creé un nuevo componente que se desliza desde la parte inferior (Bottom Sheet) mostrando:
+    - Título completo de la tarea.
+    - Descripción completa (con soporte para múltiples líneas).
+    - Horas de inicio y fin.
+    - Fecha exacta.
+    - Etiquetas visuales de prioridad y categoría.
+
+### [task_card.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/widgets/task_card.dart)
+
+- **Interactividad**: Envolví las tarjetas de tarea con un `GestureDetector`. Al tocar cualquier parte de la tarjeta (tanto en la vista horizontal como vertical), se abre el panel de detalles.
 
 ## Verificación Realizada
 
-- **Análisis Estático**: Se ejecutó `analyze_file` y se corrigieron las advertencias sobre el uso de `BuildContext` en gaps asíncronos.
-- **Estructura UI**: Se verificó que el `Stack` de la cámara ahora contiene tres botones en lugar de dos, organizados equitativamente.
-- **Flujo de Usuario**:
-    1. Click en "Cargar" -> Abre galería.
-    2. Selección de imagen -> Muestra Bottom Sheet con opciones "OCR" y "QR".
-    3. Selección de opción -> Procesa la imagen y muestra el diálogo de creación de tarea si se detecta contenido.
+- **Análisis Estático**: Se verificaron los archivos y no hay errores de sintaxis ni advertencias de tipos.
+- **Lógica de Filtrado**: El filtrado por fecha utiliza `year`, `month` y `day` para asegurar precisión total independientemente de la hora de creación.
