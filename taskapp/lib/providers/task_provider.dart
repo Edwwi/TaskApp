@@ -6,11 +6,27 @@ class TaskProvider with ChangeNotifier {
   String _language = 'es';
   String _userName = 'Usuario';
   bool _isDarkMode = false;
+  int _selectedFilterIndex = 0; // 0: All, 1: In Progress, 2: Completed
 
   List<Task> get tasks => [..._tasks];
   String get language => _language;
   String get userName => _userName;
   bool get isDarkMode => _isDarkMode;
+  int get selectedFilterIndex => _selectedFilterIndex;
+
+  void setFilterIndex(int index) {
+    _selectedFilterIndex = index;
+    notifyListeners();
+  }
+
+  List<Task> get filteredTasks {
+    if (_selectedFilterIndex == 1) {
+      return _tasks.where((t) => !t.isCompleted).toList();
+    } else if (_selectedFilterIndex == 2) {
+      return _tasks.where((t) => t.isCompleted).toList();
+    }
+    return [..._tasks];
+  }
 
   void setLanguage(String lang) {
     _language = lang;
@@ -88,6 +104,8 @@ class TaskProvider with ChangeNotifier {
       'high': 'Alta',
       'medium': 'Media',
       'low': 'Baja',
+      'mark_completed': 'Marcar completada',
+      'mark_pending': 'Marcar pendiente',
     },
     'en': {
       'welcome': 'Hello',
@@ -122,6 +140,8 @@ class TaskProvider with ChangeNotifier {
       'high': 'High',
       'medium': 'Medium',
       'low': 'Low',
+      'mark_completed': 'Mark completed',
+      'mark_pending': 'Mark pending',
     }
   };
 

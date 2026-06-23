@@ -138,7 +138,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                           label: Text(provider.translate(p.name)),
                           selected: isSelected,
                           onSelected: (val) => setState(() => _priority = p),
-                          selectedColor: pColor.withOpacity(0.2),
+                          selectedColor: pColor.withValues(alpha: 0.2),
                           labelStyle: TextStyle(color: isSelected ? pColor : Colors.grey),
                         );
                       }).toList(),
@@ -148,7 +148,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     Text(provider.translate('reminder'), style: const TextStyle(color: Colors.grey)),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<int>(
-                      value: _reminderMinutes,
+                      initialValue: _reminderMinutes,
                       decoration: const InputDecoration(border: OutlineInputBorder()),
                       items: [
                         DropdownMenuItem(value: 0, child: Text(provider.translate('none'))),
@@ -177,7 +177,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: TaskCategory.values.take(6).map((cat) {
+                      children: TaskCategory.values.map((cat) {
                         return CategoryChip(
                           label: cat.name[0].toUpperCase() + cat.name.substring(1),
                           isSelected: _category == cat,

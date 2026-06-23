@@ -42,20 +42,32 @@ class HomeScreen extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  CategoryChip(label: provider.translate('my_tasks'), isSelected: true, onTap: () {}),
-                  CategoryChip(label: provider.translate('in_progress'), isSelected: false, onTap: () {}),
-                  CategoryChip(label: provider.translate('completed'), isSelected: false, onTap: () {}),
+                  CategoryChip(
+                    label: provider.translate('my_tasks'),
+                    isSelected: provider.selectedFilterIndex == 0,
+                    onTap: () => provider.setFilterIndex(0),
+                  ),
+                  CategoryChip(
+                    label: provider.translate('in_progress'),
+                    isSelected: provider.selectedFilterIndex == 1,
+                    onTap: () => provider.setFilterIndex(1),
+                  ),
+                  CategoryChip(
+                    label: provider.translate('completed'),
+                    isSelected: provider.selectedFilterIndex == 2,
+                    onTap: () => provider.setFilterIndex(2),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
             
-            if (provider.tasks.isEmpty)
+            if (provider.filteredTasks.isEmpty)
               Container(
                 height: 200,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardTheme.color,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.grey.shade200),
                 ),
@@ -75,9 +87,9 @@ class HomeScreen extends StatelessWidget {
                 height: 200,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: provider.tasks.length,
+                  itemCount: provider.filteredTasks.length,
                   itemBuilder: (context, index) {
-                    return TaskCard(task: provider.tasks[index], isHorizontal: true);
+                    return TaskCard(task: provider.filteredTasks[index], isHorizontal: true);
                   },
                 ),
               ),
@@ -89,15 +101,15 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             
-            if (provider.tasks.isEmpty)
+            if (provider.filteredTasks.isEmpty)
               const SizedBox()
             else
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: provider.tasks.length,
+                itemCount: provider.filteredTasks.length,
                 itemBuilder: (context, index) {
-                  return TaskCard(task: provider.tasks[index]);
+                  return TaskCard(task: provider.filteredTasks[index]);
                 },
               ),
           ],

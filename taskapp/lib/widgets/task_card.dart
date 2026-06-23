@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/task_model.dart';
+import '../providers/task_provider.dart';
 import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
@@ -28,13 +30,13 @@ class TaskCard extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               const Color(0xFF4A90E2),
-              priorityColor.withOpacity(0.8),
+              priorityColor.withValues(alpha: 0.8),
             ],
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: priorityColor.withOpacity(0.3),
+              color: priorityColor.withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, 5),
             )
@@ -59,7 +61,7 @@ class TaskCard extends StatelessWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                 ),
               ],
             ),
@@ -100,7 +102,7 @@ class TaskCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: priorityColor.withOpacity(0.1),
+              color: priorityColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -126,16 +128,32 @@ class TaskCard extends StatelessWidget {
                     ),
                     if (task.reminderMinutes > 0) ...[
                       const SizedBox(width: 8),
-                      Icon(Icons.notifications_active, size: 12, color: AppTheme.primaryBlue.withOpacity(0.5)),
+                      Icon(Icons.notifications_active, size: 12, color: AppTheme.primaryBlue.withValues(alpha: 0.5)),
                     ]
                   ],
                 ),
               ],
             ),
           ),
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
-            onPressed: () {},
+            onSelected: (value) {
+              if (value == 'delete') {
+                context.read<TaskProvider>().deleteTask(task.id);
+              } else if (value == 'toggle') {
+                context.read<TaskProvider>().toggleTaskStatus(task.id);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'toggle',
+                child: Text(task.isCompleted ? 'Marcar pendiente' : 'Marcar completada'),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+              ),
+            ],
           )
         ],
       ),
@@ -156,6 +174,8 @@ class TaskCard extends StatelessWidget {
       case TaskCategory.meeting: return Icons.people;
       case TaskCategory.coding: return Icons.code;
       case TaskCategory.study: return Icons.book;
+      case TaskCategory.personal: return Icons.person_outline;
+      case TaskCategory.work: return Icons.work_outline;
       default: return Icons.task;
     }
   }

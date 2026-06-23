@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'providers/task_provider.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
@@ -7,7 +8,11 @@ import 'screens/calendar_screen.dart';
 import 'screens/capture_screen.dart';
 import 'screens/profile_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('es_ES', null);
+  await initializeDateFormatting('en_US', null);
+  
   runApp(
     MultiProvider(
       providers: [
