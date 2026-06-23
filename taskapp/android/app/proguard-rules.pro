@@ -1,3 +1,7 @@
+# Ignorar advertencias sobre clases faltantes (necesario para ML Kit)
+-ignorewarnings
+-dontwarn com.google.mlkit.vision.text.**
+
 # Google ML Kit Text Recognition ProGuard rules
 -keep class com.google.mlkit.vision.text.chinese.** { *; }
 -keep class com.google.mlkit.vision.text.devanagari.** { *; }
