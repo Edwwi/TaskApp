@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/task_provider.dart';
 import '../models/task_model.dart';
-import '../theme/app_theme.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
@@ -55,7 +54,7 @@ class StatsScreen extends StatelessWidget {
                         LinearProgressIndicator(
                           value: percentage,
                           backgroundColor: Colors.grey.shade200,
-                          color: AppTheme.primaryBlue,
+                          color: Theme.of(context).colorScheme.primary,
                           minHeight: 8,
                           borderRadius: BorderRadius.circular(4),
                         ),

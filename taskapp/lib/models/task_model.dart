@@ -44,6 +44,44 @@ class Task {
     this.isCompleted = false,
   });
 
+  Map<String, dynamic> toFirestore() {
+    return {
+      'title': title,
+      'description': description,
+      'category': category.name,
+      'priority': priority.name,
+      'dueDate': dueDate.toIso8601String(),
+      'startTime': '${startTime.hour}:${startTime.minute}',
+      'endTime': '${endTime.hour}:${endTime.minute}',
+      'reminderMinutes': reminderMinutes,
+      'isCompleted': isCompleted,
+    };
+  }
+
+  factory Task.fromFirestore(Map<String, dynamic> data, String id) {
+    final startTimeParts = (data['startTime'] as String).split(':');
+    final endTimeParts = (data['endTime'] as String).split(':');
+
+    return Task(
+      id: id,
+      title: data['title'] ?? '',
+      description: data['description'] ?? '',
+      category: TaskCategory.values.byName(data['category'] ?? 'personal'),
+      priority: TaskPriority.values.byName(data['priority'] ?? 'medium'),
+      dueDate: DateTime.parse(data['dueDate']),
+      startTime: TimeOfDay(
+        hour: int.parse(startTimeParts[0]),
+        minute: int.parse(startTimeParts[1]),
+      ),
+      endTime: TimeOfDay(
+        hour: int.parse(endTimeParts[0]),
+        minute: int.parse(endTimeParts[1]),
+      ),
+      reminderMinutes: data['reminderMinutes'] ?? 0,
+      isCompleted: data['isCompleted'] ?? false,
+    );
+  }
+
   Task copyWith({
     String? id,
     String? title,

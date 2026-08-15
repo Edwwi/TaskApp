@@ -125,7 +125,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
-                color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.8),
+                color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
               ),
             ),
           ),

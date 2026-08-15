@@ -14,6 +14,8 @@ class _LoginScreenState extends State<LoginScreen> {
   
   String _email = '';
   String _password = '';
+  String _firstName = '';
+  String _lastName = '';
   bool _isLogin = true;
   bool _isLoading = false;
 
@@ -22,16 +24,21 @@ class _LoginScreenState extends State<LoginScreen> {
       _formKey.currentState!.save();
       setState(() => _isLoading = true);
 
-      dynamic result;
+      String? error;
       if (_isLogin) {
-        result = await _authService.signInWithEmail(_email, _password);
+        error = await _authService.signInWithEmail(_email, _password);
       } else {
-        result = await _authService.registerWithEmail(_email, _password);
+        error = await _authService.registerWithEmail(
+          _email, 
+          _password, 
+          _firstName, 
+          _lastName,
+        );
       }
 
-      if (result == null && mounted) {
+      if (error != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error en la autenticación. Revisa tus datos.')),
+          SnackBar(content: Text(error)),
         );
       }
       
@@ -50,10 +57,9 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.task_alt,
-                  size: 80,
-                  color: Theme.of(context).colorScheme.primary,
+                Image.asset(
+                  'assets/images/app_logo.png',
+                  height: 80,
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -63,6 +69,30 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
+                if (!_isLogin) ...[
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person),
+                    ),
+                    textCapitalization: TextCapitalization.words,
+                    validator: (val) => val!.isEmpty ? 'Campo requerido' : null,
+                    onSaved: (val) => _firstName = val!,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      labelText: 'Apellido',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                    textCapitalization: TextCapitalization.words,
+                    validator: (val) => val!.isEmpty ? 'Campo requerido' : null,
+                    onSaved: (val) => _lastName = val!,
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 TextFormField(
                   decoration: const InputDecoration(
                     labelText: 'Correo Electrónico',

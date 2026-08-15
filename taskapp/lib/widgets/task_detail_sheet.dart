@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/task_model.dart';
-import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class TaskDetailSheet extends StatelessWidget {
@@ -52,13 +51,13 @@ class TaskDetailSheet extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   task.category.name.toUpperCase(),
-                  style: const TextStyle(
-                    color: AppTheme.primaryBlue,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -115,7 +114,7 @@ class TaskDetailSheet extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryBlue,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

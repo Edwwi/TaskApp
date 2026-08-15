@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/task_model.dart';
 import '../providers/task_provider.dart';
-import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 import 'task_detail_sheet.dart';
 
@@ -21,147 +21,149 @@ class TaskCard extends StatelessWidget {
     Color priorityColor = _getPriorityColor(task.priority);
 
     if (isHorizontal) {
-      return GestureDetector(
-        onTap: () => _showTaskDetails(context),
-        child: Container(
-          width: 200,
-        margin: const EdgeInsets.only(right: 16, bottom: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF4A90E2),
-              priorityColor.withValues(alpha: 0.8),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: priorityColor.withValues(alpha: 0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            )
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.settings, color: Colors.white70, size: 14),
-                    const SizedBox(width: 4),
-                    Text(
-                      task.category.name.toUpperCase(),
-                      style: const TextStyle(color: Colors.white70, fontSize: 10),
-                    ),
+      return Hero(
+        tag: 'task_${task.id}',
+        child: Material(
+          color: Colors.transparent,
+          child: GestureDetector(
+            onTap: () => _showTaskDetails(context),
+            child: Container(
+              width: 200,
+              margin: const EdgeInsets.only(right: 16, bottom: 8),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    priorityColor.withValues(alpha: 0.8),
                   ],
                 ),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Text(
-              task.title,
-              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              DateFormat('d MMMM, yyyy').format(task.dueDate),
-              style: const TextStyle(color: Colors.white70, fontSize: 10),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-    return GestureDetector(
-      onTap: () => _showTaskDetails(context),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardTheme.color,
-          borderRadius: BorderRadius.circular(16),
-          border: Border(left: BorderSide(color: priorityColor, width: 4)),
-          boxShadow: const [
-            BoxShadow(
-              color: AppTheme.cardShadow,
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            )
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: priorityColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: priorityColor.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  )
+                ],
               ),
-              child: Icon(
-                _getCategoryIcon(task.category),
-                color: priorityColor,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          task.category.name.toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Icon(
+                        task.isCompleted ? Icons.check_circle : Icons.circle_outlined,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
                   Text(
                     task.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
+                      const Icon(Icons.calendar_month, color: Colors.white70, size: 14),
+                      const SizedBox(width: 4),
                       Text(
-                        task.startTime.format(context),
-                        style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                        DateFormat('d MMM').format(task.dueDate),
+                        style: const TextStyle(color: Colors.white70, fontSize: 12),
                       ),
-                      if (task.reminderMinutes > 0) ...[
-                        const SizedBox(width: 8),
-                        Icon(Icons.notifications_active, size: 12, color: AppTheme.primaryBlue.withValues(alpha: 0.5)),
-                      ]
                     ],
                   ),
                 ],
               ),
             ),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert),
-              onSelected: (value) {
-                if (value == 'delete') {
-                  context.read<TaskProvider>().deleteTask(task.id);
-                } else if (value == 'toggle') {
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () => _showTaskDetails(context),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: priorityColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  _getCategoryIcon(task.category),
+                  color: priorityColor,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      task.title,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                            color: task.isCompleted ? Theme.of(context).colorScheme.outline : null,
+                          ),
+                    ),
+                    Text(
+                      '${task.startTime.format(context)} - ${task.category.name}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.outline),
+                    ),
+                  ],
+                ),
+              ),
+              Checkbox(
+                value: task.isCompleted,
+                onChanged: (val) {
+                  HapticFeedback.lightImpact();
                   context.read<TaskProvider>().toggleTaskStatus(task.id);
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'toggle',
-                  child: Text(task.isCompleted ? 'Marcar pendiente' : 'Marcar completada'),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Text('Eliminar', style: TextStyle(color: Colors.red)),
-                ),
-              ],
-            )
-          ],
+                  _showUndoSnackBar(context);
+                },
+                shape: const CircleBorder(),
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: (value) {
+                  if (value == 'delete') {
+                    context.read<TaskProvider>().deleteTask(task.id);
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -171,8 +173,24 @@ class TaskCard extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      useSafeArea: true,
       builder: (context) => TaskDetailSheet(task: task),
+    );
+  }
+
+  void _showUndoSnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(task.isCompleted ? 'Tarea completada' : 'Tarea pendiente'),
+        action: SnackBarAction(
+          label: 'DESHACER',
+          onPressed: () {
+            context.read<TaskProvider>().toggleTaskStatus(task.id);
+          },
+        ),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 

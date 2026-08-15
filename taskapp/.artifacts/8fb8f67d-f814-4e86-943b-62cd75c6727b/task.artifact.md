@@ -1,18 +1,7 @@
-- [/] Parte A: Branding y Material Design 3
-    - [/] Actualizar `pubspec.yaml` (dependencias y assets)
-    - [ ] Configurar `AppTheme` con M3, Seed Color y Poppins
-    - [ ] Implementar `SplashScreen` nativo y `OnboardingScreen`
-    - [ ] Lógica de persistencia para Onboarding
-- [ ] Parte B: Mejoras de UI
-    - [ ] Refactorizar Navegación (`NavigationBar`, `NavigationRail`)
-    - [ ] Actualizar `AppBar` con `SearchAnchor`
-    - [ ] Crear Widgets de Estado (Loading, Empty, Error)
-    - [ ] Actualizar componentes (`TaskCard`, `Buttons`, `Inputs`) a M3
-- [ ] Parte C: Animaciones y Micro-interacciones
-    - [ ] Implementar `Hero` y `AnimatedList`
-    - [ ] Añadir `AnimatedContainer` y `AnimatedSwitcher`
-    - [ ] Configurar `HapticFeedback` y SnackBar M3 con deshacer
-- [ ] Parte D: Accesibilidad
-    - [ ] Añadir `Semantics` a componentes personalizados
-    - [ ] Ajustar áreas de toque y contraste
-    - [ ] Validar soporte para `TextScaler`
+- [/] Notificaciones
+    - [x] Crear `notification_service.dart`
+    - [ ] Configurar `AndroidManifest.xml`
+    - [ ] Lógica de solicitud en `main.dart`
+- [ ] Pantalla de Suscripción (Modelo de Negocio)
+    - [ ] Crear `subscription_screen.dart` con diseño oscuro y tarjetas DOP
+    - [ ] Vincular desde `profile_screen.dart`

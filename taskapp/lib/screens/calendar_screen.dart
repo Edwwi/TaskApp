@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../providers/task_provider.dart';
 import '../widgets/task_card.dart';
 import 'create_task_screen.dart';
-import '../theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -62,7 +61,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   icon: const Icon(Icons.add, size: 18),
                   label: Text(provider.translate('create_task')),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryBlue,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -91,20 +90,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   },
                   child: Column(
                     children: [
-                      Text(dayName, style: TextStyle(color: isSelected ? AppTheme.primaryBlue : Colors.grey)),
+                      Text(dayName, style: TextStyle(color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey)),
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppTheme.primaryBlue.withValues(alpha: 0.1) : Colors.transparent,
+                          color: isSelected ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1) : Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
-                          border: isSelected ? Border.all(color: AppTheme.primaryBlue) : null,
+                          border: isSelected ? Border.all(color: Theme.of(context).colorScheme.primary) : null,
                         ),
                         child: Text(
                           '$dayNum',
                           style: TextStyle(
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            color: isSelected ? AppTheme.primaryBlue : (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black),
+                            color: isSelected ? Theme.of(context).colorScheme.primary : (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black),
                           ),
                         ),
                       ),

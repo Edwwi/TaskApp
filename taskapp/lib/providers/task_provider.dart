@@ -1,18 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/task_model.dart';
 
 class TaskProvider with ChangeNotifier {
-  final List<Task> _tasks = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<Task> _tasks = [];
+  String? _userId;
+
   String _language = 'es';
-  String _userName = 'Usuario';
+  String _firstName = '';
+  String _lastName = '';
   bool _isDarkMode = false;
-  int _selectedFilterIndex = 0; // 0: All, 1: In Progress, 2: Completed
+  int _selectedFilterIndex = 0;
 
   List<Task> get tasks => [..._tasks];
   String get language => _language;
-  String get userName => _userName;
+  String get userName => '$_firstName $_lastName'.trim().isEmpty ? 'Usuario' : '$_firstName $_lastName';
   bool get isDarkMode => _isDarkMode;
   int get selectedFilterIndex => _selectedFilterIndex;
+
+  // Actualizar el ID de usuario y sincronizar
+  void updateUserId(String? uid) {
+    if (_userId == uid) return;
+    _userId = uid;
+    if (_userId != null) {
+      _listenToTasks();
+      _fetchUserProfile();
+    } else {
+      _tasks = [];
+      _firstName = '';
+      _lastName = '';
+      notifyListeners();
+    }
+  }
+
+  void _listenToTasks() {
+    _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('tasks')
+        .snapshots()
+        .listen((snapshot) {
+      _tasks = snapshot.docs
+          .map((doc) => Task.fromFirestore(doc.data(), doc.id))
+          .toList();
+      notifyListeners();
+    });
+  }
+
+  Future<void> _fetchUserProfile() async {
+    if (_userId == null) return;
+    try {
+      final doc = await _firestore.collection('users').doc(_userId).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        _firstName = data['firstName'] ?? '';
+        _lastName = data['lastName'] ?? '';
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error al obtener perfil: $e');
+    }
+  }
 
   void setFilterIndex(int index) {
     _selectedFilterIndex = index;
@@ -28,6 +77,42 @@ class TaskProvider with ChangeNotifier {
     return [..._tasks];
   }
 
+  // Métodos de Firestore
+  Future<void> addTask(Task task) async {
+    if (_userId == null) return;
+    await _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('tasks')
+        .add(task.toFirestore());
+  }
+
+  Future<void> updateTask(Task task) async {
+    if (_userId == null) return;
+    await _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('tasks')
+        .doc(task.id)
+        .update(task.toFirestore());
+  }
+
+  Future<void> deleteTask(String id) async {
+    if (_userId == null) return;
+    await _firestore
+        .collection('users')
+        .doc(_userId)
+        .collection('tasks')
+        .doc(id)
+        .delete();
+  }
+
+  Future<void> toggleTaskStatus(String id) async {
+    final task = _tasks.firstWhere((t) => t.id == id);
+    await updateTask(task.copyWith(isCompleted: !task.isCompleted));
+  }
+
+  // UI Settings
   void setLanguage(String lang) {
     _language = lang;
     notifyListeners();
@@ -36,37 +121,6 @@ class TaskProvider with ChangeNotifier {
   void toggleDarkMode(bool val) {
     _isDarkMode = val;
     notifyListeners();
-  }
-
-  void setUserName(String name) {
-    _userName = name;
-    notifyListeners();
-  }
-
-  void addTask(Task task) {
-    _tasks.add(task);
-    notifyListeners();
-  }
-
-  void updateTask(Task task) {
-    final index = _tasks.indexWhere((t) => t.id == task.id);
-    if (index >= 0) {
-      _tasks[index] = task;
-      notifyListeners();
-    }
-  }
-
-  void deleteTask(String id) {
-    _tasks.removeWhere((t) => t.id == id);
-    notifyListeners();
-  }
-
-  void toggleTaskStatus(String id) {
-    final index = _tasks.indexWhere((t) => t.id == id);
-    if (index >= 0) {
-      _tasks[index].isCompleted = !_tasks[index].isCompleted;
-      notifyListeners();
-    }
   }
 
   // Localization strings
@@ -106,6 +160,7 @@ class TaskProvider with ChangeNotifier {
       'low': 'Baja',
       'mark_completed': 'Marcar completada',
       'mark_pending': 'Marcar pendiente',
+      'logout': 'Cerrar Sesión',
     },
     'en': {
       'welcome': 'Hello',
@@ -142,6 +197,7 @@ class TaskProvider with ChangeNotifier {
       'low': 'Low',
       'mark_completed': 'Mark completed',
       'mark_pending': 'Mark pending',
+      'logout': 'Logout',
     }
   };
 

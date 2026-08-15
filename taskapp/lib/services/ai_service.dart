@@ -1,6 +1,6 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import '../models/task_model.dart';
 
 class AIService {
   // TODO: Reemplazar con tu API Key real de Google AI Studio
@@ -42,7 +42,7 @@ Ejemplo de respuesta:
 
       return jsonDecode(cleanJson) as Map<String, dynamic>;
     } catch (e) {
-      print('Error en Gemini AI: \$e');
+      debugPrint('Error en Gemini AI: \$e');
       return null;
     }
   }

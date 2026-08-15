@@ -1,46 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const primaryBlue = Color(0xFF3F51B5);
-  static const secondaryBlue = Color(0xFF2196F3);
-  static const accentBlue = Color(0xFF03A9F4);
-  static const backgroundLight = Color(0xFFF5F7FB);
-  static const backgroundDark = Color(0xFF121212);
-  static const cardShadow = Color(0x1A000000);
-
+  static const seedColor = Color(0xFF2196F3);
+  static const primaryBlue = seedColor;
+  
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryBlue,
-        primary: primaryBlue,
-        secondary: secondaryBlue,
-        surface: Colors.white,
-        background: backgroundLight,
+        seedColor: seedColor,
+        brightness: Brightness.light,
       ),
-      scaffoldBackgroundColor: backgroundLight,
+      textTheme: GoogleFonts.poppinsTextTheme(),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
-          color: Colors.black,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-        iconTheme: IconThemeData(color: Colors.black),
+        scrolledUnderElevation: 0,
       ),
       cardTheme: CardThemeData(
-        elevation: 2,
+        elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: Colors.white,
+        clipBehavior: Clip.antiAlias,
       ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
-        headlineMedium: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
-        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
-        bodyMedium: TextStyle(fontSize: 14, color: Colors.black54),
+      navigationBarTheme: NavigationBarThemeData(
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        indicatorColor: seedColor.withValues(alpha: 0.2),
       ),
     );
   }
@@ -48,46 +32,24 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryBlue,
+        seedColor: seedColor,
         brightness: Brightness.dark,
-        primary: primaryBlue,
-        secondary: secondaryBlue,
-        surface: const Color(0xFF1E1E1E),
-        background: backgroundDark,
       ),
-      scaffoldBackgroundColor: backgroundDark,
+      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-        iconTheme: IconThemeData(color: Colors.white),
+        scrolledUnderElevation: 0,
       ),
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: const Color(0xFF2C2C2C),
+        clipBehavior: Clip.antiAlias,
       ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
-        headlineMedium: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
-        bodyMedium: TextStyle(fontSize: 14, color: Colors.white70),
+      navigationBarTheme: NavigationBarThemeData(
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        indicatorColor: seedColor.withValues(alpha: 0.3),
       ),
     );
   }
-
-  static BoxDecoration get blueGradient => const BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [primaryBlue, accentBlue],
-    ),
-  );
 }

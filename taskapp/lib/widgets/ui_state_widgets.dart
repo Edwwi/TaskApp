@@ -11,7 +11,7 @@ class ShimmerLoading extends StatelessWidget {
       itemCount: 5,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: Theme.of(context).colorScheme.surfaceVariant,
+          baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
           highlightColor: Theme.of(context).colorScheme.surface,
           child: Container(
             margin: const EdgeInsets.only(bottom: 12),
@@ -48,7 +48,7 @@ class EmptyState extends StatelessWidget {
           Icon(
             Icons.assignment_late_outlined,
             size: 80,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
           ),
           const SizedBox(height: 16),
           Text(

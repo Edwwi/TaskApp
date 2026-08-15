@@ -52,8 +52,8 @@ class DefaultFirebaseOptions {
   // Para que funcionen, debes registrar la app Android/iOS en la consola de Firebase 
   // con el ID: com.example.taskapp
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyB_gz6lV3ELjOjcFm3Dptrt99INYfVev_I',
-    appId: '1:929908901250:android:ce9e8d477e77b47b', // Placeholder
+    apiKey: 'AIzaSyAerxrZ3RM-6ecGqWEJuE-IAkmAgAkyKLA',
+    appId: '1:929908901250:android:489364b40d32676cb8fb9b',
     messagingSenderId: '929908901250',
     projectId: 'taskapp-bdb35',
     storageBucket: 'taskapp-bdb35.firebasestorage.app',

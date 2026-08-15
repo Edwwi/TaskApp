@@ -1,88 +1,41 @@
-# Rediseño Integral Material Design 3 - Check-IT
+# Sugerencias Inteligentes con IA (Gemini)
 
-Este plan detalla la transformación de la aplicación "TaskApp" a una experiencia moderna siguiendo los estándares de Material Design 3, accesibilidad WCAG 2.1 AA y micro-interacciones.
+Este plan detalla la integración de **Google Gemini AI** para proporcionar sugerencias automáticas al crear tareas, analizando tanto el texto extraído de archivos/fotos como lo que el usuario escribe manualmente.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Identidad Visual**: Se ha seleccionado el nombre **"Check-IT"** y el color semilla **#2196F3** (extraído del icono proporcionado).
-> **Tipografía**: Se utilizará **Google Font "Poppins"** como fuente principal para un aspecto moderno y limpio.
-> **Assets**: Se requiere que el usuario guarde la imagen del icono en `assets/images/app_logo.png` para configurar el Splash Screen nativo.
-
-## Open Questions
-
-- ¿Existe alguna ilustración específica que prefiera para el onboarding? De lo contrario, usaré iconos vectoriales elegantes o placeholders de colores.
-
----
+> **API Key de Gemini**: Para que esta funcionalidad sea gratuita y rápida de implementar, utilizaremos el paquete `google_generative_ai`. Se requiere una API Key de [Google AI Studio](https://aistudio.google.com/).
+> **Prompt Engineering**: Se ha diseñado un prompt específico para que la IA devuelva siempre un formato JSON válido que la app pueda procesar.
 
 ## Proposed Changes
 
-### Parte A: Branding y Material Design 3
+### 1. Servicio de Inteligencia Artificial
 
 #### [MODIFY] [pubspec.yaml](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/pubspec.yaml)
-- Añadir dependencias: `google_fonts`, `flutter_native_splash`, `shared_preferences`, `shimmer`, `smooth_page_indicator`.
-- Configurar activos y fuentes.
+- Añadir la dependencia `google_generative_ai`.
 
-#### [MODIFY] [app_theme.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/theme/app_theme.dart)
-- Implementar `ColorScheme.fromSeed` con `seedColor: Color(0xFF2196F3)`.
-- Integrar `GoogleFonts.poppinsTextTheme()`.
-- Configurar temas Light y Dark unificados.
+#### [NEW] [ai_service.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/services/ai_service.dart)
+- Crear una clase que configure el modelo `gemini-1.5-flash`.
+- Método `suggestFields(String rawText)` que analice el texto y extraiga: Título, Descripción, Prioridad, Categoría y Fecha estimada.
 
-#### [NEW] [onboarding_screen.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/screens/onboarding_screen.dart)
-- Crear flujo de 3 pantallas con `PageView` y `DotsIndicator`.
-- Lógica de persistencia con `SharedPreferences`.
+### 2. Integración en Captura (OCR)
 
-#### [MODIFY] [main.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/main.dart)
-- Actualizar `MaterialApp` para manejar el estado de onboarding.
-- Configurar `useMaterial3: true`.
+#### [MODIFY] [capture_screen.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/screens/capture_screen.dart)
+- Al terminar el OCR, en lugar de crear una tarea genérica, enviar el texto a la IA.
+- Mostrar una pantalla intermedia de "Propuesta de IA" donde el usuario vea los campos sugeridos antes de guardar.
 
----
+### 3. Integración en Creación Manual
 
-### Parte B: Mejoras de UI
-
-#### [MODIFY] [main.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/main.dart)
-- Reemplazar `BottomNavigationBar` por `NavigationBar`.
-- Añadir `NavigationRail` para layouts adaptativos (tablets).
-
-#### [MODIFY] [home_screen.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/screens/home_screen.dart)
-- Implementar `SearchAnchor` en el `AppBar`.
-- Reemplazar listas estáticas por estados (Loading/Empty/Error).
-
-#### [NEW] [ui_state_widgets.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/widgets/ui_state_widgets.dart)
-- Crear widgets reutilizables para `ShimmerLoading`, `EmptyState` y `ErrorState`.
-
-#### [MODIFY] [task_card.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/widgets/task_card.dart)
-- Usar `Card` con elevación tonal de M3.
-- Actualizar jerarquía de botones.
-
----
-
-### Parte C: Animaciones y Micro-interacciones
-
-#### [MODIFY] [task_card.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/widgets/task_card.dart)
-- Envolver elementos clave en `Hero` para transiciones a detalles.
-- Añadir `HapticFeedback` en acciones de completado.
-
-#### [MODIFY] [home_screen.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/screens/home_screen.dart)
-- Usar `AnimatedList` para inserción/borrado de tareas.
-- `AnimatedSwitcher` para cambios de estado de UI.
-
----
-
-### Parte D: Accesibilidad WCAG 2.1 AA
-
-#### [GENERAL] Auditoría de Semántica
-- Envolver todos los iconos e imágenes con `Semantics(label: '...')`.
-- Asegurar que los botones tengan un área de toque de al menos `48x48dp`.
-- Verificar contraste de colores generados por M3.
+#### [MODIFY] [create_task_screen.dart](file:///C:/Users/edwip/OneDrive/Documents/TaskApp/taskapp/lib/screens/create_task_screen.dart)
+- Añadir un botón flotante o de acción con el icono `Icons.auto_awesome` (Magia).
+- Al pulsarlo, la IA analizará el Título y Descripción actuales para rellenar automáticamente la Prioridad, Categoría y sugerir una fecha.
 
 ## Verification Plan
 
-### Automated Tests
-- Ejecutar `flutter analyze` para asegurar limpieza del código.
-
 ### Manual Verification
-- Probar el flujo de onboarding (debe aparecer solo una vez).
-- Cambiar el tema del sistema (Light/Dark) y verificar la adaptación automática.
-- Probar la navegación en diferentes tamaños de pantalla (si es posible simular tablet).
-- Verificar que el `SnackBar` de borrado tenga opción de deshacer.
+1. **Prueba OCR**: Subir una foto de un ticket o nota manuscrita. Verificar que la IA asigna una categoría lógica (ej: "Work" si dice "Reunión", "Study" si dice "Examen").
+2. **Prueba Manual**: Escribir en el título "Estudiar para el examen de Flutter el lunes" y pulsar el botón de IA. Verificar que:
+    - La categoría cambie a **Study**.
+    - La prioridad sea **Alta**.
+    - La fecha se ajuste al próximo lunes.

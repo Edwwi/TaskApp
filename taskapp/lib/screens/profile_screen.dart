@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/task_provider.dart';
-import '../theme/app_theme.dart';
+import '../services/auth_service.dart';
+import 'subscription_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -9,6 +10,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TaskProvider>();
+    final authService = AuthService();
 
     return Scaffold(
       appBar: AppBar(
@@ -19,10 +21,10 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 50,
-              backgroundColor: AppTheme.primaryBlue,
-              child: Icon(Icons.person, size: 50, color: Colors.white),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              backgroundImage: const AssetImage('assets/images/app_logo.png'),
             ),
             const SizedBox(height: 16),
             Text(
@@ -32,7 +34,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 32),
             
             // Preferences Section
-            _buildSectionHeader(provider.translate('preferences')),
+            _buildSectionHeader(context, provider.translate('preferences')),
             Card(
               child: Column(
                 children: [
@@ -60,22 +62,58 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Statistics Section
-            _buildSectionHeader(provider.translate('stats')),
+            _buildSectionHeader(context, provider.translate('stats')),
             _buildStatsGrid(provider),
+
+            const SizedBox(height: 24),
+            
+            // Subscription Section
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.star, color: Colors.amber),
+                title: const Text('Planes de Suscripción'),
+                subtitle: const Text('Ver modelos de negocio'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SubscriptionScreen()),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 32),
+            
+            // Logout Button
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => authService.signOut(),
+                icon: const Icon(Icons.logout),
+                label: Text(provider.translate('logout')),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  side: const BorderSide(color: Colors.red),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12, left: 4),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
           title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary),
         ),
       ),
     );

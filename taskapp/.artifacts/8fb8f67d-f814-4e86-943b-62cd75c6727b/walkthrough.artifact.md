@@ -1,42 +1,28 @@
-# Walkthrough - Rediseño Check-IT
+# Notificaciones y Modelo de Negocio - Check-IT
 
-Se ha completado la transformación integral de la aplicación a Material Design 3. A continuación se detallan los cambios y mejoras implementadas.
+Se han implementado las funcionalidades de permisos de notificación y la pantalla de modelos de negocio para profesionalizar la aplicación.
 
 ## Cambios Realizados
 
-### Parte A: Branding y M3
-- **Identidad**: Nombre de la app actualizado a **Check-IT**.
-- **Tema**: Implementación de `ColorScheme.fromSeed` con el color azul del icono. Soporte completo para **Modo Claro y Oscuro**.
-- **Tipografía**: Integración de **Poppins** como fuente global.
-- **Onboarding**: Nueva pantalla de bienvenida de 3 pasos con persistencia.
+### 1. Sistema de Notificaciones
+- **`NotificationService`**: Nueva clase de servicio para gestionar la inicialización de notificaciones y la solicitud de permisos.
+- **Solicitud en el Primer Inicio**: La aplicación ahora detecta si es la primera vez que se abre y lanza automáticamente el diálogo de permiso del sistema (Android e iOS).
+- **Configuración Nativa**: Se añadieron los permisos necesarios en el `AndroidManifest.xml` (`POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`, etc.) para asegurar la compatibilidad con Android 13+.
 
-### Parte B: Interfaz de Usuario (UI)
-- **Navegación**: Migración de `BottomNavigationBar` a `NavigationBar` con soporte adaptativo (`NavigationRail` para tablets).
-- **Home**: Implementación de `SearchAnchor` para búsquedas integradas y `RefreshIndicator`.
-- **Componentes**: Actualización de tarjetas, botones (Filled, Outlined) y estados de carga/vacío.
-
-### Parte C: Animaciones
-- **Transiciones**: Añadidas animaciones `Hero` en las tarjetas de tareas.
-- **Micro-interacciones**: Feedback háptico al completar tareas y `SnackBar` con opción de deshacer.
-- **Listas**: Transiciones suaves con `AnimatedSwitcher`.
-
-### Parte D: Accesibilidad
-- **Semántica**: Mejora de etiquetas para lectores de pantalla.
-- **Contraste**: Verificado para cumplir con WCAG 2.1 AA.
-- **Áreas de Toque**: Ajustadas a un mínimo de 48x48dp.
+### 2. Pantalla de Suscripción (Modelo de Negocio)
+- **`SubscriptionScreen`**: Nueva interfaz premium con fondo oscuro siguiendo fielmente el diseño de la imagen proporcionada.
+- **Planes en DOP**: Se configuraron tres niveles de precios:
+    - **Free (DOP $0)**: Gestión básica y OCR esencial.
+    - **Pro (DOP $650)**: IA avanzada, escaneo ilimitado y analíticas.
+    - **Teams (DOP $800/usuario)**: Herramientas de colaboración e integraciones corporativas.
+- **Acceso desde Perfil**: Se añadió un nuevo apartado en la pantalla de **Perfil** llamado "Planes de Suscripción" con un icono de estrella dorada.
 
 ## Verificación
 
 > [!IMPORTANT]
-> **Dependencias**: Se han instalado correctamente `google_fonts`, `shared_preferences`, `shimmer`, etc.
-> **Errores**: Se han corregido más de 50 errores de compilación y análisis relacionados con la migración de tipos y temas.
-
-> [!WARNING]
-> **Logo de la App**: He dejado comentada la línea del asset `assets/images/app_logo.png` en el `pubspec.yaml` porque el archivo físico aún no existe en tu carpeta de proyecto. Una vez que guardes el icono en esa ruta, puedes descomentar la sección `assets` para habilitar el Splash Screen.
+> **Primera Ejecución**: Al desinstalar y reinstalar la app, el sistema preguntará inmediatamente por los permisos de notificación.
+> **Diseño**: La pantalla de suscripción utiliza colores `Colors.blueAccent`, `Colors.greenAccent` y `Colors.orangeAccent` para diferenciar claramente los planes.
 
 ---
 
-## Próximos Pasos Recomendados
-1. Guardar el icono adjunto en `assets/images/app_logo.png`.
-2. Probar la aplicación en un dispositivo físico para sentir el feedback háptico.
-3. Verificar la navegación en una tablet o pantalla ancha para ver el `NavigationRail`.
+¡La aplicación **Check-IT** ahora está lista para ser presentada en el formato Shark Tank con una estrategia de negocio clara y un sistema de retención de usuarios (notificaciones) robusto!

@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/task_provider.dart';
 import '../models/task_model.dart';
-import '../theme/app_theme.dart';
+import '../services/ai_service.dart';
 
 class CaptureScreen extends StatefulWidget {
   const CaptureScreen({super.key});
@@ -21,6 +21,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
   final TextRecognizer _textRecognizer = TextRecognizer();
   final BarcodeScanner _barcodeScanner = BarcodeScanner();
   final ImagePicker _picker = ImagePicker();
+  final AIService _aiService = AIService();
 
   @override
   void initState() {
@@ -53,7 +54,11 @@ class _CaptureScreenState extends State<CaptureScreen> {
         final recognizedText = await _textRecognizer.processImage(inputImage);
         if (!mounted) return;
         if (recognizedText.text.isNotEmpty) {
-          _showTaskDialog(recognizedText.text, "OCR");
+          // Analizar con Gemini AI
+          final suggestions = await _aiService.suggestFields(recognizedText.text);
+          if (mounted) {
+            _showTaskDialog(recognizedText.text, "OCR", suggestions: suggestions);
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('No se detectó texto en la imagen')),
@@ -139,33 +144,62 @@ class _CaptureScreenState extends State<CaptureScreen> {
     );
   }
 
-  void _showTaskDialog(String content, String source) {
+  void _showTaskDialog(String content, String source, {Map<String, dynamic>? suggestions}) {
+    final title = suggestions?['title'] ?? (content.length > 30 ? content.substring(0, 30) : content);
+    final description = suggestions?['description'] ?? content;
+    final categoryStr = suggestions?['category'] ?? 'personal';
+    final priorityStr = suggestions?['priority'] ?? 'medium';
+    final dueDateStr = suggestions?['dueDate'] ?? DateTime.now().toIso8601String().split('T')[0];
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Tarea Detectada ($source)'),
-        content: Text(content),
+        title: Row(
+          children: [
+            const Icon(Icons.auto_awesome, color: Colors.amber, size: 20),
+            const SizedBox(width: 8),
+            Text('Sugerencia de IA (\$source)'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Título: \$title', style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text('Descripción: \$description', maxLines: 3, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Chip(label: Text(categoryStr), backgroundColor: Colors.blue.shade50),
+                const SizedBox(width: 8),
+                Chip(label: Text(priorityStr), backgroundColor: Colors.orange.shade50),
+              ],
+            ),
+            Text('Fecha: \$dueDateStr', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          ],
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Descartar')),
           ElevatedButton(
             onPressed: () {
               final newTask = Task(
                 id: DateTime.now().millisecondsSinceEpoch.toString(),
-                title: content.length > 30 ? content.substring(0, 30) : content,
-                description: content,
-                category: TaskCategory.personal,
-                priority: TaskPriority.medium,
-                dueDate: DateTime.now(),
+                title: title,
+                description: description,
+                category: TaskCategory.values.byName(categoryStr),
+                priority: TaskPriority.values.byName(priorityStr),
+                dueDate: DateTime.parse(dueDateStr),
                 startTime: TimeOfDay.now(),
                 endTime: TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 1))),
               );
               context.read<TaskProvider>().addTask(newTask);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Tarea agregada exitosamente')),
+                const SnackBar(content: Text('Tarea creada con éxito por la IA')),
               );
             },
-            child: const Text('Agregar Tarea'),
+            child: const Text('Crear Tarea'),
           ),
         ],
       ),
@@ -234,7 +268,7 @@ class _CaptureButton extends StatelessWidget {
       children: [
         FloatingActionButton(
           onPressed: onTap,
-          backgroundColor: AppTheme.primaryBlue,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           child: Icon(icon, color: Colors.white),
         ),
         const SizedBox(height: 8),
